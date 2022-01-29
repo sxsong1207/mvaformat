@@ -1,0 +1,23 @@
+# Configure file for the OpenMVS package, defining the following variables:
+#  mvaformat_INCLUDE_DIRS - include directories
+#  mvaformat_DEFINITIONS  - definitions to be used
+#  mvaformat_LIBRARIES    - libraries to link against
+#  mvaformat_BINARIES     - binaries
+
+...
+@PACKAGE_INIT@
+...
+set(mvaformat "@CMAKE_PROJECT_VERSION@")
+
+# Compute paths
+
+set(MVAFORMAT_PREFIX "@CMAKE_INSTALL_PREFIX@")
+set(MVAFORMAT_CMAKE_DIR "@INSTALL_CMAKE_DIR_IN@")
+set(MVAFORMAT_INCLUDE_DIRS "@INSTALL_INCLUDE_DIR_IN@")
+
+set(MVAFORMAT_DEFINITIONS "@MVAFORMAT_DEFINITIONS@")
+set(MVAFORMAT_LIBRARIES mvaformat::mvaformat)
+set(MVAFORMAT_BINARIES)
+
+include("${CMAKE_CURRENT_LIST_DIR}/mvaformatTargets.cmake")
+check_required_components(mvaformat)
