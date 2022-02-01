@@ -32,7 +32,7 @@
 namespace py = pybind11;
 using namespace MVSA;
 
-PYBIND11_MODULE(mvaformat, m) {
+PYBIND11_MODULE(pymvaformat, m) {
   m.doc() = "MultiView Archive Data compression";
 
   py::bind_vector<std::vector<bool>>(m, "BoolArr");
@@ -76,7 +76,7 @@ PYBIND11_MODULE(mvaformat, m) {
       .def("HasResolution", &Scene::Platform::Camera::HasResolution)
       .def("IsNormalized", &Scene::Platform::Camera::IsNormalized)
       .def("GetNormalizationScale", py::overload_cast<>(&Scene::Platform::Camera::GetNormalizationScale, py::const_))
-      .def_static("GetNormalizationScale",py::overload_cast<uint32_t, uint32_t>(&Scene::Platform::Camera::GetNormalizationScale));
+      .def_static("ComputeNormalizationScale",py::overload_cast<uint32_t, uint32_t>(&Scene::Platform::Camera::GetNormalizationScale));
 
   py::class_<Scene::Platform::Pose>(platform, "Pose")
       .def(py::init())
@@ -160,7 +160,7 @@ PYBIND11_MODULE(mvaformat, m) {
       .def_readwrite("height", &Scene::Mesh::Texture::height)
       .def_readwrite("data", &Scene::Mesh::Texture::data);
 
-  py::class_<Scene>(m, "Scene")
+  py::class_<Scene>(m, "CScene")
       .def(py::init())
       .def_readwrite("compression", &Scene::compression)
       .def_readwrite("filePath", &Scene::filePath)
@@ -179,40 +179,32 @@ PYBIND11_MODULE(mvaformat, m) {
 
   py::enum_<ArchiveFormat>(m, "ArchiveFormat")
       .value("STDIO", ArchiveFormat::STDIO)
-#ifdef _USE_GZSTREAM
       .value("GZSTREAM", ArchiveFormat::GZSTREAM)
-#endif  // _USE_GZSTREAM
-#ifdef _USE_ZSTDSTREAM
       .value("ZSTDSTREAM", ArchiveFormat::ZSTDSTREAM)
-#endif  // _USE_ZSTDSTREAM
       .export_values();
 
-  py::class_<py::Scene, Scene>(m, "Scene")
+  py::class_<py::pyScene, Scene>(m, "Scene")
       .def(py::init())
       .def(py::init<const std::string &>())
-      .def("load", &py::Scene::load)
-      .def("save", &py::Scene::save, py::arg("filename"),
+      .def("load", &py::pyScene::load)
+      .def("save", &py::pyScene::save, py::arg("filename"),
            py::arg("compression") = ArchiveFormat::STDIO)
-#ifdef _USE_GZSTREAM
-      .def("save_gzstream", &py::Scene::save, py::arg("filename"),
+      .def("save_gzstream", &py::pyScene::save, py::arg("filename"),
            py::arg("compression") = ArchiveFormat::GZSTREAM)
-#endif  // _USE_GZSTREAM
-#ifdef _USE_ZSTDSTREAM
-      .def("save_zstdstream", &py::Scene::save, py::arg("filename"),
+      .def("save_zstdstream", &py::pyScene::save, py::arg("filename"),
            py::arg("compression") = ArchiveFormat::ZSTDSTREAM)
-#endif  // _USE_ZSTDSTREAM
-      .def("info", &py::Scene::info)
-      .def("diagnose", &py::Scene::diagnose)
+      .def("info", &py::pyScene::info)
+      .def("diagnose", &py::pyScene::diagnose)
       .def("clean_unused_platforms_poses_cameras",
-           &py::Scene::clean_unused_platforms_poses_cameras)
-      .def("clean_unused_images", &py::Scene::clean_unused_images)
-      .def("garbage_collect", &py::Scene::garbage_collect)
-      .def("inflate_image_confidence", &py::Scene::inflate_image_confidence,
+           &py::pyScene::clean_unused_platforms_poses_cameras)
+      .def("clean_unused_images", &py::pyScene::clean_unused_images)
+      .def("garbage_collect", &py::pyScene::garbage_collect)
+      .def("inflate_image_confidence", &py::pyScene::inflate_image_confidence,
            py::arg("scale"))
-      .def("append_images", &py::Scene::append_images, py::arg("other"),
+      .def("append_images", &py::pyScene::append_images, py::arg("other"),
            py::arg("platform_offset"))
-      .def("append_vertices_lines", &py::Scene::append_vertices_lines,
+      .def("append_vertices_lines", &py::pyScene::append_vertices_lines,
            py::arg("other"), py::arg("image_offset"))
-      .def("append_mesh", &py::Scene::append_mesh, py::arg("other"))
-      .def("append", &py::Scene::append, py::arg("other"));
+      .def("append_mesh", &py::pyScene::append_mesh, py::arg("other"))
+      .def("append", &py::pyScene::append, py::arg("other"));
 }

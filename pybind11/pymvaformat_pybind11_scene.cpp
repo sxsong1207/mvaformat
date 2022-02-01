@@ -57,45 +57,29 @@ static const char *FormatName(int compression) {
   switch (compression) {
     case MVSA::ArchiveFormat::STDIO:
       return "STDIO";
-#ifdef _USE_GZSTREAM
     case MVSA::ArchiveFormat::GZSTREAM:
       return "GZSTREAM";
-#endif  // _USE_GZSTREAM
-#ifdef _USE_ZSTDSTREAM
     case MVSA::ArchiveFormat::ZSTDSTREAM:
       return "ZSTDSTREAM";
-#endif  // _USE_ZSTDSTREAM
-#ifdef _USE_COMPRESSED_STREAMS
-    case MVSA::ArchiveFormat::BROTLI:
-      return "BROTLI";
-    case MVSA::ArchiveFormat::LZ4:
-      return "LZ4";
-    case MVSA::ArchiveFormat::LZMA:
-      return "LZMA";
-    case MVSA::ArchiveFormat::ZLIB:
-      return "ZLIB";
-    case MVSA::ArchiveFormat::ZSTD:
-      return "ZSTD";
-#endif  // _USE_COMPRESSED_STREAMS
   }
   return "Unknown";
 }
 
-Scene::Scene() {}
+pyScene::pyScene() {}
 
-Scene::Scene(const std::string &filename) { load(filename); }
+pyScene::pyScene(const std::string &filename) { load(filename); }
 
-bool Scene::load(const std::string &filename) {
+bool pyScene::load(const std::string &filename) {
   if (!MVSA::MVAIO::SerializeLoad(*this, filename)) return false;
   return true;
 }
 
-bool Scene::save(const std::string &filename, int compression) {
+bool pyScene::save(const std::string &filename, int compression) {
   if (!MVSA::MVAIO::SerializeSave(*this, filename, compression)) return false;
   return true;
 }
 
-void Scene::info() {
+void pyScene::info() {
   printf("File Format: %s\n", FormatName(this->compression));
   printf("File Path: %s\n", this->filePath.c_str());
   printf("#img: %zu #platform: %zu\n", this->images.size(),
@@ -118,7 +102,7 @@ void Scene::info() {
       this->transform(3, 3));
 }
 //----------------------------------------------------------------
-bool Scene::diagnose() const {
+bool pyScene::diagnose() const {
   bool good = true;
   size_t num_v = this->vertices.size();
   size_t num_vc = this->verticesColor.size();
@@ -191,7 +175,7 @@ bool Scene::diagnose() const {
   return good;
 }
 
-void Scene::clean_unused_images() {
+void pyScene::clean_unused_images() {
   std::vector<uint32_t> image_reidx(images.size(), MVSA::NO_ID);
   // scan image usage
 #pragma omp parallel for shared(image_reidx)
@@ -214,7 +198,7 @@ void Scene::clean_unused_images() {
     for (auto &vi : v.views) vi.imageID = image_reidx[vi.imageID];
 }
 
-void Scene::clean_unused_platforms_poses_cameras() {
+void pyScene::clean_unused_platforms_poses_cameras() {
   size_t num_plat = platforms.size();
   std::vector<uint32_t> platform_reidx(num_plat, MVSA::NO_ID);
   std::vector<std::vector<uint32_t>> camera_reidx(num_plat);
@@ -275,19 +259,19 @@ void Scene::clean_unused_platforms_poses_cameras() {
   }
 }
 
-void Scene::garbage_collect() {
+void pyScene::garbage_collect() {
   clean_unused_images();
   clean_unused_platforms_poses_cameras();
 }
 
-Scene &Scene::inflate_image_confidence(float scale) {
+pyScene &pyScene::inflate_image_confidence(float scale) {
 #pragma omp parallel for
   for (auto &v : vertices)
     for (auto &vi : v.views) vi.confidence *= scale;
   return *this;
 }
 
-Scene &Scene::append_images(const Scene &other, size_t platform_offset) {
+pyScene &pyScene::append_images(const pyScene &other, size_t platform_offset) {
   for (auto &p : other.platforms) platforms.push_back(p);
 
   for (auto img : other.images) {
@@ -297,7 +281,7 @@ Scene &Scene::append_images(const Scene &other, size_t platform_offset) {
   return *this;
 }
 
-Scene &Scene::append_vertices_lines(const Scene &other, size_t image_offset) {
+pyScene &pyScene::append_vertices_lines(const pyScene &other, size_t image_offset) {
   // TODO: HANDLE Transform
   for (auto v : other.vertices) {
     for (auto &vi : v.views) vi.imageID += image_offset;
@@ -315,7 +299,7 @@ Scene &Scene::append_vertices_lines(const Scene &other, size_t image_offset) {
   return *this;
 }
 
-Scene &Scene::append_mesh(const Scene &other) {
+pyScene &pyScene::append_mesh(const pyScene &other) {
   // TODO: HANDLE Transform
   // TODO: Solve non-manifold
   size_t v_offset = mesh.vertices.size();
@@ -353,7 +337,7 @@ Scene &Scene::append_mesh(const Scene &other) {
   return *this;
 }
 
-Scene &Scene::append(const Scene &other) {
+pyScene &pyScene::append(const pyScene &other) {
   int platform_offset = this->platforms.size();
   int image_offset = this->images.size();
   append_images(other, platform_offset);

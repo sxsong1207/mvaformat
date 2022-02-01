@@ -20,7 +20,18 @@ set(CONAN_PACKAGES
 set(CONAN_CMAKE_OPTIONS "")
 
 if(BUILD_TESTS)
-        list(APPEND CONAN_PACKAGES doctest/2.4.8)
+list(APPEND CONAN_PACKAGES doctest/2.4.8)
+endif()
+
+if(BUILD_APPS)
+list(APPEND CONAN_PACKAGES
+        cxxopts/3.0.0
+        spdlog/1.9.2
+        tinyply/2.3.2)
+endif()
+
+if(BUILD_PYTHON_MODULES)
+list(APPEND CONAN_PACKAGES pybind11/2.8.1)
 endif()
 
 conan_cmake_configure(

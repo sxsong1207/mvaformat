@@ -30,10 +30,10 @@
 
 //== CLASS DEFINITION ============================================
 namespace pybind11 {
-class Scene : public MVSA::Scene {
+class pyScene : public MVSA::Scene {
  public:
-  Scene();
-  Scene(const std::string &filename);
+  pyScene();
+  pyScene(const std::string &filename);
   bool load(const std::string &filename);
   bool save(const std::string &filename, int compression = MVSA::ArchiveFormat::STDIO);
   void info();
@@ -41,11 +41,11 @@ class Scene : public MVSA::Scene {
   void clean_unused_images();
   void clean_unused_platforms_poses_cameras();
   void garbage_collect();
-  Scene &inflate_image_confidence(float scale);
-  Scene &append_images(const Scene &other, size_t platform_offset);
-  Scene &append_vertices_lines(const Scene &other, size_t image_offset);
-  Scene &append_mesh(const Scene &other);
-  Scene &append(const Scene &other);
+  pyScene &inflate_image_confidence(float scale);
+  pyScene &append_images(const pyScene &other, size_t platform_offset);
+  pyScene &append_vertices_lines(const pyScene &other, size_t image_offset);
+  pyScene &append_mesh(const pyScene &other);
+  pyScene &append(const pyScene &other);
 };
 }
 //================================================================
